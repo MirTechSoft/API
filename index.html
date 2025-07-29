@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Student API App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Student Management</h1>
+    <div class="container">
+        <!-- ✅ Simple form submission (no JavaScript needed) -->
+        <form action="students.php" method="POST">
+            <input type="text" name="name" placeholder="Enter name" required>
+            <input type="email" name="email" placeholder="Enter email" required>
+            <button type="submit">Add Student</button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('studentForm');
+        const tableBody = document.querySelector('#studentTable tbody');
+
+        // Load students on page load
+        window.onload = loadStudents;
+
+        function loadStudents() {
+            fetch('http://localhost:8000/students.php')
+                .then(response => response.json())
+                .then(data => {
+                    tableBody.innerHTML = '';
+                    data.forEach(student => {
+                        const row = `<tr>
+            <td>${student.id}</td>
+            <td>${student.name}</td>
+            <td>${student.email}</td>
+          </tr>`;
+                        tableBody.innerHTML += row;
+                    });
+                });
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+
+            // ✅ Validate Name
+            if (name === '') {
+                alert("❗ Please enter a name.");
+                return;
+            }
+
+            // ✅ Validate Email Format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert("❗ Please enter a valid email address.");
+                return;
+            }
+
+            // ✅ Send POST request if all inputs are valid
+            fetch('http://localhost:8000/students.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, email })
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.id) {
+                        window.location.href = `student-profile.php?id=${result.id}`;
+                    }
+                });
+        });
+    </script>
+</body>
+
+</html>
